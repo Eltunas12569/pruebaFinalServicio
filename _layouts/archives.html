@@ -1,0 +1,52 @@
+---
+layout: page
+# The Archives of posts as an index.
+---
+{% include lang.html %}
+
+<div id="archives" class="pl-xl-3">
+  <ul >
+    {% assign unidades = site.posts | group_by_exp: 'post', 'post.categories[0] ' | sort: 'name' %}
+    {% for unidad in unidades %}
+      <li>
+        <strong>{{ unidad.name }}</strong>
+        <ul class="ms-3">
+          {% assign temas = unidad.items
+            | group_by_exp: 'post', "post.title | split: ' ' | first | split: '.' | slice: 0, 2 | join: '.'"
+            | sort: 'name'
+          %}
+          {% for tema in temas %}
+            <li>
+              <!-- Filtrar el post con formato "X.A NOMBRE" -->
+              {% assign tema_post = null %}
+              {% for post in tema.items %}
+                {% assign post_prefix = post.title | split: ' ' | first | split: '.' %}
+                {% if post_prefix.size == 2 %}
+                  {% assign tema_post = post %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+              {% if tema_post %}
+                <a href="{{ tema_post.url | relative_url }}">
+                  <strong>{{ tema_post.title }}</strong>
+                </a>
+              {% endif %}
+              <ul class="ms-3">
+                {% assign subtemas = tema.items
+                  | where_exp: 'post', 'post.url != tema_post.url'
+                  | group_by_exp: 'post', "post.title | split: ' ' | first | split: '.' | slice: 0, 3 | join: '.'"
+                  | sort: 'name'
+                %}
+                {% for subtema in subtemas %}
+                  <li>
+                    <a href="{{ subtema.items[0].url | relative_url }}">{{ subtema.items[0].title }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
